@@ -80,30 +80,31 @@ class SMBSpider:
     def dir_list(self, files, path):
         path = path.replace('*', '')
         for result in files:
-            for pattern in self.pattern:
-                if result.get_longname().lower().find(pattern.lower()) != -1:
-                    if not self.onlyfiles and result.is_directory():
-                        self.logger.highlight(u"//{}/{}{} [dir]".format(self.share, path, result.get_longname()))
-                    else:
-                        self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{}]".format(self.share,
+            if self.pattern: 
+                for pattern in self.pattern:
+                    if result.get_longname().lower().find(pattern.lower()) != -1:
+                        if not self.onlyfiles and result.is_directory():
+                            self.logger.highlight(u"//{}/{}{} [dir]".format(self.share, path, result.get_longname()))
+                        else:
+                            self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{}]".format(self.share,
                                                                                        path,
                                                                                        result.get_longname(),
                                                                                        'n\\a' if not self.get_lastm_time(result) else self.get_lastm_time(result),
                                                                                        result.get_filesize()))
-                    self.results.append('{}{}'.format(path, result.get_longname()))
-
-            for regex in self.regex:
-                if regex.findall(result.get_longname()):
-                    if not self.onlyfiles and result.is_directory():
-                        self.logger.highlight(u"//{}/{}{} [dir]".format(self.share, path, result.get_longname()))
-                    else:
-                        self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{}]".format(self.share,
+                        self.results.append('{}{}'.format(path, result.get_longname()))
+            if self.regex: 
+                for regex in self.regex:
+                    if regex.findall(result.get_longname()):
+                        if not self.onlyfiles and result.is_directory():
+                            self.logger.highlight(u"//{}/{}{} [dir]".format(self.share, path, result.get_longname()))
+                        else:
+                            self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{}]".format(self.share,
                                                                                        path,
                                                                                        result.get_longname(),
                                                                                        'n\\a' if not self.get_lastm_time(result) else self.get_lastm_time(result),
                                                                                        result.get_filesize()))
 
-                    self.results.append('{}{}'.format(path, result.get_longname()))
+                        self.results.append('{}{}'.format(path, result.get_longname()))
 
             if self.content:
                 if not result.is_directory():
@@ -129,10 +130,12 @@ class SMBSpider:
                 except Exception:
                     traceback.print_exc()
                     break
-
-                for pattern in self.pattern:
-                    if contents.lower().find(pattern.lower()) != -1:
-                        self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{} offset:{} pattern:'{}']".format(self.share,
+                if self.pattern:
+                    for pattern in self.pattern:
+                        match = contents
+                        logging.debug("PATTERN match: {}".format(match))
+                        if match != -1:
+                            self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{} offset:{} pattern:'{}']".format(self.share,
                                                                                                             path,
                                                                                                             result.get_longname(),
                                                                                                             'n\\a' if not self.get_lastm_time(result) else self.get_lastm_time(result),
@@ -141,9 +144,12 @@ class SMBSpider:
                                                                                                             pattern))
                         self.results.append('{}{}'.format(path, result.get_longname()))
 
-                for regex in self.regex:
-                    if regex.findall(contents):
-                        self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{} offset:{} regex:'{}']".format(self.share,
+                if self.regex:
+                    for regex in self.regex:
+                        match = regex.findall(contents)
+                        logging.debug("REGEX match: {}".format(match))
+                        if match:
+                            self.logger.highlight(u"//{}/{}{} [lastm:'{}' size:{} offset:{} regex:'{}']".format(self.share,
                                                                                                           path,
                                                                                                           result.get_longname(),
                                                                                                           'n\\a' if not self.get_lastm_time(result) else self.get_lastm_time(result),
